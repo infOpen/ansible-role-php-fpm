@@ -60,5 +60,5 @@ test-vagrant:
 	vagrant up
 	vagrant provision
 	vagrant ssh-config > .vagrant/ssh-config
-	testinfra --hosts=php-fpm_trusty --ssh-config=.vagrant/ssh-config --noconftest --sudo
-	testinfra --hosts=php-fpm_xenial --ssh-config=.vagrant/ssh-config --noconftest --sudo
+	testinfra --hosts=php_fpm_trusty --ssh-config=.vagrant/ssh-config --noconftest --sudo
+	testinfra --hosts=php_fpm_xenial --ssh-config=.vagrant/ssh-config --noconftest --sudo

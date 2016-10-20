@@ -5,10 +5,10 @@
 VAGRANTFILE_API_VERSION = '2'
 
 VMS = {
-  :php-fpm_trusty => {
+  :php_fpm_trusty => {
     :box => 'ubuntu/trusty64'
   },
-  :php-fpm_xenial => {
+  :php_fpm_xenial => {
     :box => 'ubuntu/xenial64'
   }
 }
