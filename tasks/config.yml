@@ -11,3 +11,11 @@
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_files_mode }}"
   notify: 'Restart php-fpm'
+
+
+- name: 'Check php-fpm syntax of configuration files'
+  become: True
+  shell: "{{ php_fpm_binary_name }} -t"
+  register: 'php_fpm_check_config'
+  failed_when: "{{ php_fpm_check_config.rc != 0 }}"
+  changed_when: "{{ php_fpm_check_config.rc != 0 }}"

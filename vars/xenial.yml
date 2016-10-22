@@ -4,5 +4,7 @@
 php_fpm_packages:
   - 'php-fpm'
 
+php_fpm_binary_name: 'php-fpm7.0'
 php_fpm_service_name: 'php7.0-fpm'
+
 php_fpm_config_base: '/etc/php/7.0/fpm'
