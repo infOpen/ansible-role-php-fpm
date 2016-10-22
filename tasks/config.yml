@@ -1,0 +1,13 @@
+---
+
+# Main php-fpm configuration file
+
+- name: 'Manage main php-fpm configuration file'
+  become: True
+  template:
+    src: 'php-fpm.conf.j2'
+    dest: "{{ php_fpm_config_base ~ '/php-fpm.conf' }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_files_mode }}"
+  notify: 'Restart php-fpm'

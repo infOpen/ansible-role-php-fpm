@@ -2,3 +2,11 @@
 
 # Handlers main file for php-fpm role
 
+- name: 'Restart php-fpm'
+  become: True
+  service:
+    name: "{{ php_fpm_service_name }}"
+    state: 'restarted'
+  tags:
+    - 'php-fpm::role'
+    - 'php-fpm::config'

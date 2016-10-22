@@ -14,3 +14,10 @@
   tags:
     - 'php-fpm::role'
     - 'php-fpm::install'
+
+
+- name: 'Include configuration tasks'
+  include: "./config.yml"
+  tags:
+    - 'php-fpm::role'
+    - 'php-fpm::config'

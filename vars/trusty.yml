@@ -3,3 +3,6 @@
 # Ubuntu Trusty vars
 php_fpm_packages:
   - 'php5-fpm'
+
+php_fpm_service_name: 'php5-fpm'
+php_fpm_config_base: '/etc/php5/fpm'

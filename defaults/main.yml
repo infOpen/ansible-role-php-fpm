@@ -5,3 +5,26 @@
 php_fpm_apt_update_cache: True
 php_fpm_apt_cache_valid_time: 3600
 php_fpm_packages_state: 'present'
+
+php_fpm_config_owner: 'root'
+php_fpm_config_group: 'root'
+php_fpm_config_files_mode: '0644'
+
+# Main configuration file configuration
+php_fpm_config_main_default:
+  global:
+    pid: '/run/php/php-fpm.pid'
+    error_log: '/var/log/php-fpm.log'
+    syslog.facility: 'daemon'
+    syslog.ident: 'php-fpm'
+    log_level: 'notice'
+    emergency_restart_threshold: 0
+    emergency_restart_interval: 0
+    process_control_timeout: 0
+    process.max: 128
+    process.priority: '-19'
+    daemonize: 'yes'
+    events.mechanism: 'epoll'
+    systemd_interval: 10
+php_fpm_config_main_user: {}
+php_fpm_config_main: "{{ php_fpm_config_main_default | combine(php_fpm_config_main_user) }}"
