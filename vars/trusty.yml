@@ -1,0 +1,5 @@
+---
+
+# Ubuntu Trusty vars
+php_fpm_packages:
+  - 'php5-fpm'
