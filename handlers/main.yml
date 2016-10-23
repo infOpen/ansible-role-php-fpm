@@ -10,3 +10,4 @@
   tags:
     - 'php-fpm::role'
     - 'php-fpm::config'
+    - 'php-fpm::install'
