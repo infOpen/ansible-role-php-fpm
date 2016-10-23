@@ -1,0 +1,10 @@
+---
+
+- name: 'Install packages'
+  become: True
+  apt:
+    name: "{{ item }}"
+    update_cache: "{{ php_fpm_apt_update_cache }}"
+    cache_valid_time: "{{ php_fpm_apt_cache_valid_time }}"
+    state: "{{ php_fpm_packages_state }}"
+  with_items: "{{ php_fpm_packages }}"
