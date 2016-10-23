@@ -1,0 +1,70 @@
+---
+
+- name: 'Manage main php-fpm configuration file'
+  become: True
+  ini_file:
+    dest: "{{ php_fpm_config_base ~ '/php-fpm.conf' }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_files_mode }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+  notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_config_main }}"
+
+
+- name: 'Manage php.ini configuration file'
+  become: True
+  ini_file:
+    dest: "{{ php_fpm_config_base ~ '/php.ini' }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_files_mode }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+  notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_config_php_ini }}"
+
+
+- name: 'Manage pool configuration files'
+  become: True
+  template:
+    src: 'pool.conf.j2'
+    dest: "{{ php_fpm_config_base }}/pool.d/{{ item.name }}.conf"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_files_mode }}"
+  notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_pools }}"
+
+
+- name: 'Find all existing pools'
+  become: True
+  shell: >
+    find {{ php_fpm_config_base }}/pool.d/ \
+     -name "*.conf" \
+     -type f \
+     -exec basename \{} .conf \;
+  register: 'php_fpm_pool_files'
+  changed_when: False
+
+
+- name: 'Remove not managed pool files'
+  become: True
+  file:
+    path: "{{ php_fpm_config_base }}/pool.d/{{ item }}.conf"
+    state: 'absent'
+  notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_pool_files.stdout_lines | difference(php_fpm_pools | map(attribute='name') | list) }}"
+
+
+- name: 'Check php-fpm syntax of configuration files'
+  become: True
+  shell: "{{ php_fpm_binary_name }} -t"
+  register: 'php_fpm_check_config'
+  failed_when: "{{ php_fpm_check_config.rc != 0 }}"
+  changed_when: "{{ php_fpm_check_config.rc != 0 }}"

@@ -2,3 +2,44 @@
 
 # Defaults vars file for php-fpm role
 
+php_fpm_apt_update_cache: True
+php_fpm_apt_cache_valid_time: 3600
+php_fpm_packages: "{{ _php_fpm_packages }}"
+php_fpm_packages_state: 'present'
+
+php_fpm_binary_name: "{{ _php_fpm_binary_name }}"
+php_fpm_service_name: "{{ _php_fpm_service_name }}"
+
+php_fpm_config_base: "{{ _php_fpm_config_base }}"
+php_fpm_config_owner: 'root'
+php_fpm_config_group: 'root'
+php_fpm_config_files_mode: '0644'
+
+php_fpm_pid_file: "{{ _php_fpm_pid_file }}"
+php_fpm_error_log_file: "{{ _php_fpm_error_log_file }}"
+
+# php-fpm.conf configuration file configuration
+php_fpm_config_main:
+  - section: 'global'
+    option: 'pid'
+    value: "{{ php_fpm_pid_file }}"
+  - section: 'global'
+    option: 'error_log'
+    value: "{{ php_fpm_error_log_file }}"
+  - section: 'global'
+    option: 'include'
+    value: "{{ php_fpm_config_base }}/pool.d/*.conf"
+
+# php.ini configuration file configuration
+php_fpm_config_php_ini: []
+
+# Pools default settings
+php_fpm_pool_defaults:
+  pm: dynamic
+  pm.max_children: 5
+  pm.start_servers: 2
+  pm.min_spare_servers: 1
+  pm.max_spare_servers: 3
+  pm.status_path: /status
+
+php_fpm_pools: []
