@@ -6,6 +6,7 @@
   include_vars: "vars/{{ ansible_distribution_release | lower }}.yml"
   tags:
     - 'php-fpm::role'
+    - 'php-fpm::config'
     - 'php-fpm::install'
 
 
