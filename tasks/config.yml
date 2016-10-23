@@ -1,16 +1,33 @@
 ---
 
-# Main php-fpm configuration file
-
 - name: 'Manage main php-fpm configuration file'
   become: True
-  template:
-    src: 'php-fpm.conf.j2'
+  ini_file:
     dest: "{{ php_fpm_config_base ~ '/php-fpm.conf' }}"
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_files_mode }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: "{{ item.state | default('present') }}"
   notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_config_main }}"
+
+
+- name: 'Manage php.ini configuration file'
+  become: True
+  ini_file:
+    dest: "{{ php_fpm_config_base ~ '/php.ini' }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_files_mode }}"
+    section: "{{ item.section }}"
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    state: "{{ item.state | default('present') }}"
+  notify: 'Restart php-fpm'
+  with_items: "{{ php_fpm_config_php_ini }}"
 
 
 - name: 'Check php-fpm syntax of configuration files'

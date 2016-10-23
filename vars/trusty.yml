@@ -1,10 +1,13 @@
 ---
 
 # Ubuntu Trusty vars
-php_fpm_packages:
+_php_fpm_packages:
   - 'php5-fpm'
 
-php_fpm_binary_name: 'php5-fpm'
-php_fpm_service_name: 'php5-fpm'
+_php_fpm_binary_name: 'php5-fpm'
+_php_fpm_service_name: 'php5-fpm'
 
-php_fpm_config_base: '/etc/php5/fpm'
+_php_fpm_config_base: '/etc/php5/fpm'
+
+_php_fpm_pid_file: '/var/run/php5-fpm.pid'
+_php_fpm_error_log_file: '/var/log/php5-fpm.log'

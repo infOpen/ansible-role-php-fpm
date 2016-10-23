@@ -33,3 +33,19 @@ def test_main_config_file(SystemInfo, File):
     assert cfg_file.exists
     assert cfg_file.is_file
     assert cfg_file.contains('[global]')
+
+
+def test_fpm_php_ini_config_file(SystemInfo, File):
+
+    cfg_file_path = ''
+
+    if SystemInfo.codename == 'trusty':
+        cfg_file_path = '/etc/php5/fpm/php.ini'
+    elif SystemInfo.codename == 'xenial':
+        cfg_file_path = '/etc/php/7.0/fpm/php.ini'
+
+    cfg_file = File(cfg_file_path)
+
+    assert cfg_file.exists
+    assert cfg_file.is_file
+    assert cfg_file.contains('[PHP]')

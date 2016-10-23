@@ -49,6 +49,20 @@ make test-vagrant
 ``` yaml
 ```
 
+### Define custom settings for php.ini or php-fpm.conf files
+
+You can define custom settings for php.ini or php-fpm.conf using:
+* php.ini: 'php_fpm_config_php_ini'
+* php-fpm.conf: 'php_fpm_config_main'
+
+``` yaml
+php_fpm_config_main:
+  - section: 'global'
+    option: 'my_option'
+    value: 'my_value'
+    state: 'present'
+```
+
 ## Dependencies
 
 None
