@@ -49,3 +49,33 @@ def test_fpm_php_ini_config_file(SystemInfo, File):
     assert cfg_file.exists
     assert cfg_file.is_file
     assert cfg_file.contains('[PHP]')
+
+
+def test_unmanaged_pool_config_file(SystemInfo, File):
+
+    cfg_pool_dir_path = ''
+
+    if SystemInfo.codename == 'trusty':
+        cfg_pool_dir_path = '/etc/php5/fpm/pool.d/'
+    elif SystemInfo.codename == 'xenial':
+        cfg_pool_dir_path = '/etc/php/7.0/fpm/pool.d/'
+
+    pool_file = File(cfg_pool_dir_path + 'www.conf')
+
+    assert pool_file.exists is False
+
+
+def test_managed_pool_config_file(SystemInfo, File):
+
+    cfg_pool_dir_path = ''
+
+    if SystemInfo.codename == 'trusty':
+        cfg_pool_dir_path = '/etc/php5/fpm/pool.d/'
+    elif SystemInfo.codename == 'xenial':
+        cfg_pool_dir_path = '/etc/php/7.0/fpm/pool.d/'
+
+    pool_file = File(cfg_pool_dir_path + 'foobar.conf')
+
+    assert pool_file.exists
+    assert pool_file.is_file
+    assert pool_file.contains('[foobar]')

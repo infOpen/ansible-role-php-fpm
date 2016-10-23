@@ -63,6 +63,18 @@ php_fpm_config_main:
     state: 'present'
 ```
 
+### Define pools configuration
+
+```yaml
+php_fpm_pools:
+  - name: 'foobar'
+    user: 'www-data'
+    group: 'www-data'
+    listen: '/var/run/php5-fpm-foobar.sock'
+    listen.owner: 'www-data'
+    listen.group: 'www-data'
+```
+
 ## Dependencies
 
 None
