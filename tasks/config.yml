@@ -3,50 +3,65 @@
 - name: 'Manage main php-fpm configuration file'
   become: True
   ini_file:
-    dest: "{{ php_fpm_config_base ~ '/php-fpm.conf' }}"
+    dest: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf"
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_files_mode }}"
     section: "{{ item.section }}"
     option: "{{ item.option }}"
     value: "{{ item.value }}"
-    state: "{{ item.state | default('present') }}"
-  notify: 'Restart php-fpm'
-  with_items: "{{ php_fpm_config_main }}"
+    state: "{{ item.state | default('present') }}"
+  notify: 'Restart php-fpm instance'
+  with_items: "{{ php_fpm_instance.fpm_config }}"
 
 
 - name: 'Manage php.ini configuration file'
   become: True
   ini_file:
-    dest: "{{ php_fpm_config_base ~ '/php.ini' }}"
+    dest: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini"
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_files_mode }}"
     section: "{{ item.section }}"
     option: "{{ item.option }}"
     value: "{{ item.value }}"
-    state: "{{ item.state | default('present') }}"
-  notify: 'Restart php-fpm'
-  with_items: "{{ php_fpm_config_php_ini }}"
+    state: "{{ item.state | default('present') }}"
+  notify: 'Restart php-fpm instance'
+  with_items: "{{ php_fpm_instance.php_config | default([]) }}"
+  when: "{{ not php_fpm_shared_php_enabled }}"
 
 
-- name: 'Manage pool configuration files'
+- name: 'Enable php modules'
+  become: True
+  file:
+    src: "{{ php_fpm_config_base_path }}/mods-available/{{ item.name }}.ini"
+    dest: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/conf.d/{{ item.name }}.ini"
+    state: "{{ item.state | default('link') }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+  notify: 'Restart php-fpm instance'
+  with_items: "{{ php_fpm_instance.php_modules }}"
+  when: "{{ not php_fpm_shared_php_enabled }}"
+
+
+- name: 'Manage instance pool configuration files'
   become: True
   template:
     src: 'pool.conf.j2'
-    dest: "{{ php_fpm_config_base }}/pool.d/{{ item.name }}.conf"
+    dest: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/pool.d/{{ item.name }}.conf"
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_files_mode }}"
-  notify: 'Restart php-fpm'
-  with_items: "{{ php_fpm_pools }}"
+  notify: 'Restart php-fpm instance'
+  with_items: "{{ php_fpm_instance.fpm_pools }}"
 
 
 - name: 'Find all existing pools'
   become: True
   shell: >
-    find {{ php_fpm_config_base }}/pool.d/ \
+    find {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/pool.d/ \
      -name "*.conf" \
+     {% for fpm_pool in php_fpm_instance.fpm_pools %} ! -name "{{ fpm_pool.name }}.conf" {% endfor %} \
      -type f \
      -exec basename \{} .conf \;
   register: 'php_fpm_pool_files'
@@ -56,15 +71,33 @@
 - name: 'Remove not managed pool files'
   become: True
   file:
-    path: "{{ php_fpm_config_base }}/pool.d/{{ item }}.conf"
+    path: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/pool.d/{{ item }}.conf"
     state: 'absent'
-  notify: 'Restart php-fpm'
-  with_items: "{{ php_fpm_pool_files.stdout_lines | difference(php_fpm_pools | map(attribute='name') | list) }}"
+  notify: 'Restart php-fpm instance'
+  with_items: "{{ php_fpm_pool_files.stdout_lines }}"
 
 
-- name: 'Check php-fpm syntax of configuration files'
+- name: 'Check php-fpm instance syntax of configuration files'
   become: True
-  shell: "{{ php_fpm_binary_name }} -t"
+  shell: "{{ php_fpm_binary_name }} -t -c {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf"
   register: 'php_fpm_check_config'
   failed_when: "{{ php_fpm_check_config.rc != 0 }}"
   changed_when: "{{ php_fpm_check_config.rc != 0 }}"
+
+
+- name: 'Manage instance service'
+  become: True
+  service:
+    name: "{{ php_fpm_instance.service_name }}"
+    enabled: "{{ php_fpm_instance.service_enabled | default(True) }}"
+    state: "{{ php_fpm_instance.service_state | default('started') }}"
+
+
+- name: 'Manage logrotate configuration file'
+  become: True
+  template:
+    src: 'logrotate.j2'
+    dest: "/etc/logrotate.d/{{ php_fpm_instance.service_name }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: '0644'

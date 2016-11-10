@@ -1,8 +1,8 @@
 ---
 
 php_fpm_instance:
-  name: 'fpm'
-  service_name: "{{ _php_fpm_service_name }}"
+  name: 'fpm-foo'
+  service_name: 'fpm-foo'
   fpm_config:
     - section: 'global'
       option: 'pid'
@@ -12,12 +12,12 @@ php_fpm_instance:
       value: "{{ _php_fpm_error_log_file_path }}"
     - section: 'global'
       option: 'include'
-      value: "{{ php_fpm_config_base_path }}/fpm/pool.d/*.conf"
+      value: "{{ php_fpm_config_base_path }}/fpm-foo/pool.d/*.conf"
   fpm_pools:
     - name: 'foobar'
       user: 'www-data'
       group: 'www-data'
-      listen: '/var/run/php5-fpm-foobar.sock'
+      listen: '/var/run/php5-fpm-foobar2.sock'
       listen.owner: 'www-data'
       listen.group: 'www-data'
   php_config: []
@@ -26,4 +26,4 @@ php_fpm_instance:
     - name: '20-json'
       state: 'absent'
 
-php_fpm_shared_php_enabled: False
+php_fpm_shared_php_enabled: True

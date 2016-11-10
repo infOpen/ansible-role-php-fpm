@@ -1,0 +1,61 @@
+---
+
+# All tasks about custom instances management
+
+- name: 'Manage fpm configuration structure'
+  become: True
+  file:
+    path: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/{{ item }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_directories_mode }}"
+    state: 'directory'
+  with_items:
+    - ''
+    - 'pool.d'
+
+
+- name: 'Manage shared PHP configuration'
+  become: True
+  file:
+    src: "{{ item.src }}"
+    dest: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/{{ item.dest }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_directories_mode }}"
+    state: 'link'
+  with_items:
+    - src: "{{ php_fpm_shared_php_master_file }}"
+      dest: "php.ini"
+    - src: "{{ php_fpm_shared_php_master_confd }}"
+      dest: "conf.d"
+  when: "{{ php_fpm_shared_php_enabled }}"
+
+
+- name: 'Copy php.ini master file to instance'
+  become: True
+  shell: "cp {{ php_fpm_shared_php_master_file }} {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini"
+  args:
+    creates: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini"
+  when: "{{ not php_fpm_shared_php_enabled }}"
+
+
+- name: 'Manage php modules instance directory'
+  become: True
+  file:
+    path: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/conf.d"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_directories_mode }}"
+    state: 'directory'
+  when: "{{ not php_fpm_shared_php_enabled }}"
+
+
+- name: 'Create instance init files'
+  become: True
+  template:
+    src: 'templates/init.j2'
+    dest: "{{ php_fpm_init_base_path }}/{{ php_fpm_instance.service_name }}"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_config_directories_mode }}"
