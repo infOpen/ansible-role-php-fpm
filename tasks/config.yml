@@ -109,6 +109,7 @@
     name: "{{ php_fpm_instance.service_name }}"
     enabled: "{{ php_fpm_instance.service_enabled | default(True) }}"
     state: "{{ php_fpm_instance.service_state | default('started') }}"
+  notify: 'Restart php-fpm instance'
 
 
 - name: 'Manage logrotate configuration file'

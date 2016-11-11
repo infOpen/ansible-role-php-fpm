@@ -10,6 +10,7 @@
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_directories_mode }}"
     state: 'directory'
+  notify: 'Restart php-fpm instance'
   with_items:
     - ''
     - 'pool.d'
@@ -24,6 +25,7 @@
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_directories_mode }}"
     state: 'link'
+  notify: 'Restart php-fpm instance'
   with_items:
     - src: "{{ php_fpm_shared_php_master_file }}"
       dest: "php.ini"
@@ -37,6 +39,7 @@
   shell: "cp {{ php_fpm_shared_php_master_file }} {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini"
   args:
     creates: "{{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini"
+  notify: 'Restart php-fpm instance'
   when: "{{ not php_fpm_shared_php_enabled }}"
 
 
@@ -48,6 +51,7 @@
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_directories_mode }}"
     state: 'directory'
+  notify: 'Restart php-fpm instance'
   when: "{{ not php_fpm_shared_php_enabled }}"
 
 
@@ -59,6 +63,7 @@
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_init_files_mode }}"
+  notify: 'Restart php-fpm instance'
 
 
 - name: 'Create instance systemd files'
@@ -81,11 +86,11 @@
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
     state: 'link'
-  register: 'php_fpm_systemd_file_content'
   when: "{{ php_fpm_systemd_file_content | changed }}"
 
 
 - name: 'Reload systemd units'
   become: True
   command: 'systemctl daemon-reload'
+  notify: 'Restart php-fpm instance'
   when: "{{ php_fpm_systemd_file_content | changed }}"
