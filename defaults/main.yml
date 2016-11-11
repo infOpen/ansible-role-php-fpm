@@ -10,6 +10,9 @@ php_fpm_packages_state: 'present'
 
 # Binaries
 php_fpm_binary_name: "{{ _php_fpm_binary_name }}"
+
+# Service management
+php_fpm_disable_default_service: False
 php_fpm_service_name: "{{ _php_fpm_service_name }}"
 
 # Paths
