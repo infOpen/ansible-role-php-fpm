@@ -6,18 +6,18 @@ php_fpm_instance:
   fpm_config:
     - section: 'global'
       option: 'pid'
-      value: "{{ _php_fpm_pid_file_path }}"
+      value: "{{ _php_fpm_run_base_path }}/fpm-foo.pid"
     - section: 'global'
       option: 'error_log'
-      value: "{{ _php_fpm_error_log_file_path }}"
+      value: "{{ _php_fpm_log_base_path }}/fpm-foo.log"
     - section: 'global'
       option: 'include'
       value: "{{ php_fpm_config_base_path }}/fpm-foo/pool.d/*.conf"
   fpm_pools:
-    - name: 'foobar'
+    - name: 'foobar2'
       user: 'www-data'
       group: 'www-data'
-      listen: '/var/run/php5-fpm-foobar2.sock'
+      listen: '/var/run/php-fpm-foobar2.sock'
       listen.owner: 'www-data'
       listen.group: 'www-data'
   php_config: []

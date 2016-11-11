@@ -20,6 +20,7 @@ php_fpm_init_base_path: '/etc/init.d'
 php_fpm_init_file_path: "{{ _php_fpm_init_file_path }}"
 php_fpm_log_base_path: "{{ _php_fpm_log_base_path }}"
 php_fpm_run_base_path: "{{ _php_fpm_run_base_path }}"
+php_fpm_systemd_base_path: "{{ _php_fpm_systemd_base_path | default('') }}"
 
 # Files
 php_fpm_error_log_file_path: "{{ _php_fpm_error_log_file_path }}"
@@ -30,6 +31,7 @@ php_fpm_config_owner: 'root'
 php_fpm_config_group: 'root'
 php_fpm_config_directories_mode: '0700'
 php_fpm_config_files_mode: '0644'
+php_fpm_init_files_mode: '0755'
 
 # Instance management
 php_fpm_instance:

@@ -68,21 +68,24 @@ def test_unmanaged_pool_config_file(SystemInfo, File, instance_name):
     assert pool_file.exists is False
 
 
-@pytest.mark.parametrize('instance_name', [('fpm'), ('fpm-foo')])
-def test_managed_pool_config_file(SystemInfo, File, instance_name):
+@pytest.mark.parametrize('instance_name,pool_name', [
+    ('fpm', 'foobar'),
+    ('fpm-foo', 'foobar2')
+])
+def test_managed_pool_config_file(SystemInfo, File, instance_name, pool_name):
 
     cfg_pool_dir_path = ''
 
     if SystemInfo.codename == 'trusty':
-        cfg_pool_dir_path = '/etc/php5/%s/pool.d/' % instance_name
+        cfg_pool_dir_path = '/etc/php5/%s/pool.d' % instance_name
     elif SystemInfo.codename == 'xenial':
-        cfg_pool_dir_path = '/etc/php/7.0/%s/pool.d/' % instance_name
+        cfg_pool_dir_path = '/etc/php/7.0/%s/pool.d' % instance_name
 
-    pool_file = File(cfg_pool_dir_path + 'foobar.conf')
+    pool_file = File('%s/%s.conf' % (cfg_pool_dir_path, pool_name))
 
     assert pool_file.exists
     assert pool_file.is_file
-    assert pool_file.contains('[foobar]')
+    assert pool_file.contains('[%s]' % pool_name)
 
 
 @pytest.mark.parametrize('instance_name,service_name', [
@@ -91,17 +94,17 @@ def test_managed_pool_config_file(SystemInfo, File, instance_name):
 ])
 def test_init_files(SystemInfo, File, instance_name, service_name):
 
-    default_service_name = ''
-
-    if SystemInfo.codename == 'trusty':
-        default_service_name = 'php5-fpm'
-    elif SystemInfo.codename == 'xenial':
-        default_service_name = 'php7.0-fpm'
+    real_service_name = ''
 
     if service_name == 'default':
-        init_file = File('/etc/init.d/%s' % default_service_name)
+        if SystemInfo.codename == 'trusty':
+            real_service_name = 'php5-fpm'
+        elif SystemInfo.codename == 'xenial':
+            real_service_name = 'php7.0-fpm'
     else:
-        init_file = File('/etc/init.d/%s' % service_name)
+        real_service_name = service_name
+
+    init_file = File('/etc/init.d/%s' % real_service_name)
 
     assert init_file.exists
     assert init_file.is_file
@@ -112,19 +115,19 @@ def test_init_files(SystemInfo, File, instance_name, service_name):
     ('fpm', 'default'),
     ('fpm-foo', 'fpm-foo')
 ])
-def test_servicess(SystemInfo, Service, instance_name, service_name):
+def test_services(SystemInfo, Service, instance_name, service_name):
 
-    default_service_name = ''
-
-    if SystemInfo.codename == 'trusty':
-        default_service_name = 'php5-fpm'
-    elif SystemInfo.codename == 'xenial':
-        default_service_name = 'php7.0-fpm'
+    real_service_name = ''
 
     if service_name == 'default':
-        service = Service(default_service_name)
+        if SystemInfo.codename == 'trusty':
+            real_service_name = 'php5-fpm'
+        elif SystemInfo.codename == 'xenial':
+            real_service_name = 'php7.0-fpm'
     else:
-        service = Service(service_name)
+        real_service_name = service_name
 
-    assert service.is_running
+    service = Service(real_service_name)
+
     assert service.is_enabled
+    assert service.is_running

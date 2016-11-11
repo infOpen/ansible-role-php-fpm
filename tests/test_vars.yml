@@ -17,7 +17,7 @@ php_fpm_instance:
     - name: 'foobar'
       user: 'www-data'
       group: 'www-data'
-      listen: '/var/run/php5-fpm-foobar.sock'
+      listen: '/var/run/php-fpm-foobar.sock'
       listen.owner: 'www-data'
       listen.group: 'www-data'
   php_config: []

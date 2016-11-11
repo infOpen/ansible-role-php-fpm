@@ -14,6 +14,7 @@ _php_fpm_service_name: 'php7.0-fpm'
 _php_fpm_config_base_path: '/etc/php/7.0'
 _php_fpm_log_base_path: '/var/log'
 _php_fpm_run_base_path: '/var/run'
+_php_fpm_systemd_base_path: '/lib/systemd/system/'
 
 # Files paths
 _php_fpm_binary_check_config_file_path: '/usr/lib/php/php7.0-fpm-checkconf'

@@ -58,4 +58,34 @@
     dest: "{{ php_fpm_init_base_path }}/{{ php_fpm_instance.service_name }}"
     owner: "{{ php_fpm_config_owner }}"
     group: "{{ php_fpm_config_group }}"
-    mode: "{{ php_fpm_config_directories_mode }}"
+    mode: "{{ php_fpm_init_files_mode }}"
+
+
+- name: 'Create instance systemd files'
+  become: True
+  template:
+    src: 'templates/init_systemd.j2'
+    dest: "{{ php_fpm_systemd_base_path }}/{{ php_fpm_instance.service_name }}.service"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    mode: "{{ php_fpm_init_files_mode }}"
+  register: 'php_fpm_systemd_file_content'
+  when: "{{ php_fpm_systemd_base_path != '' }}"
+
+
+- name: 'Create systemd links'
+  become: True
+  file:
+    src: "{{ php_fpm_systemd_base_path }}/{{ php_fpm_instance.service_name }}.service"
+    dest: "/etc/systemd/system/multi-user.target.wants/{{ php_fpm_instance.service_name }}.service"
+    owner: "{{ php_fpm_config_owner }}"
+    group: "{{ php_fpm_config_group }}"
+    state: 'link'
+  register: 'php_fpm_systemd_file_content'
+  when: "{{ php_fpm_systemd_file_content | changed }}"
+
+
+- name: 'Reload systemd units'
+  become: True
+  command: 'systemctl daemon-reload'
+  when: "{{ php_fpm_systemd_file_content | changed }}"

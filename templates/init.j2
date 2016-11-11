@@ -18,7 +18,7 @@ PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="PHP5 FastCGI Process Manager for {{ php_fpm_instance.name }} instance"
 NAME={{ php_fpm_instance.service_name }}
 CONFIG_FILE={{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}
-DAEMON=/usr/sbin/$NAME
+DAEMON={{ php_fpm_binary_file_path }}
 DAEMON_ARGS="--daemonize --fpm-config ${CONFIG_FILE}"
 PIDFILE={{ php_fpm_run_base_path }}/{{ php_fpm_instance.service_name }}.pid
 TIMEOUT=30
@@ -36,11 +36,6 @@ SCRIPTNAME=/etc/init.d/$NAME
 # Define LSB log_* functions.
 # Depend on lsb-base (>= 3.0-6) to ensure that this file is present.
 . /lib/lsb/init-functions
-
-# Don't run if we are running upstart
-if init_is_upstart; then
-    exit 1
-fi
 
 #
 # Function to check the correctness of the config file
@@ -129,9 +124,6 @@ do_tmpfiles() {
 
 case "$1" in
     start)
-    if init_is_upstart; then
-        exit 1
-    fi
     [ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
     do_check $VERBOSE
     case "$?" in
@@ -146,9 +138,6 @@ case "$1" in
     esac
     ;;
     stop)
-    if init_is_upstart; then
-        exit 1
-    fi
     [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
     do_stop
     case "$?" in
@@ -157,15 +146,12 @@ case "$1" in
     esac
     ;;
     status)
-        status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+        status_of_proc "$DAEMON" "$NAME" -p "$PIDFILE" && exit 0 || exit $?
         ;;
     check)
         do_check yes
     ;;
     reload|force-reload)
-    if init_is_upstart; then
-        exit 1
-    fi
     log_daemon_msg "Reloading $DESC" "$NAME"
     do_reload
     log_end_msg $?
@@ -181,9 +167,6 @@ case "$1" in
     fi
     ;;
     restart)
-    if init_is_upstart; then
-        exit 1
-    fi
     log_daemon_msg "Restarting $DESC" "$NAME"
     do_stop
     case "$?" in
