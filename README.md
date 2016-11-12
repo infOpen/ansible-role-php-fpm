@@ -95,7 +95,14 @@ php_fpm_instance:
     - section: 'global'
       option: 'include'
       value: "{{ php_fpm_config_base_path }}/fpm/pool.d/*.conf"
-  fpm_pools: []
+  fpm_pools:
+    - name: 'www'
+      user: 'www-data'
+      group: 'www-data'
+      listen: "/var/run/{{ _php_fpm_service_name }}.sock"
+      listen.owner: 'www-data'
+      listen.group: 'www-data'
+      chdir: '/'
   php_config: []
   php_modules: []
 
