@@ -17,8 +17,10 @@
     - 'php-fpm::install'
 
 
-- name: 'Manage instances'
+- name: 'Manage custom instances'
   include: './manage_custom_instances.yml'
+  when:
+    - "{{ php_fpm_instance.name != 'fpm' }}"
   tags:
     - 'php-fpm::role'
     - 'php-fpm::install'

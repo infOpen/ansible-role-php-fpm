@@ -108,7 +108,9 @@ def test_init_files(SystemInfo, File, instance_name, service_name):
 
     assert init_file.exists
     assert init_file.is_file
-    assert init_file.contains('for %s instance' % instance_name)
+
+    if instance_name != 'fpm':
+        assert init_file.contains('for %s instance' % instance_name)
 
 
 @pytest.mark.parametrize('instance_name,service_name', [
