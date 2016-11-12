@@ -15,7 +15,7 @@
 - name: 'Disable and stop default service'
   become: True
   service:
-    name: "{{ php_fpm_service_name }}"
+    name: "{{ _php_fpm_service_name }}"
     state: 'stopped'
     enabled: False
   when:

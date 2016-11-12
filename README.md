@@ -58,7 +58,6 @@ php_fpm_binary_name: "{{ _php_fpm_binary_name }}"
 
 # Service management
 php_fpm_disable_default_service: False
-php_fpm_service_name: "{{ _php_fpm_service_name }}"
 
 # Paths
 php_fpm_binary_check_config_file_path: "{{ _php_fpm_binary_check_config_file_path }}"
