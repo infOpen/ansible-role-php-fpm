@@ -11,14 +11,24 @@
 
 
 - name: 'Include install tasks'
-  include: "./install.yml"
+  include: './install.yml'
   tags:
     - 'php-fpm::role'
     - 'php-fpm::install'
 
 
+- name: 'Manage custom instances'
+  include: './manage_custom_instances.yml'
+  when:
+    - "{{ php_fpm_instance.name != 'fpm' }}"
+  tags:
+    - 'php-fpm::role'
+    - 'php-fpm::install'
+    - 'php-fpm::config'
+
+
 - name: 'Include configuration tasks'
-  include: "./config.yml"
+  include: './config.yml'
   tags:
     - 'php-fpm::role'
     - 'php-fpm::config'

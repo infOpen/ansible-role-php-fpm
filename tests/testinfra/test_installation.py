@@ -19,14 +19,15 @@ def test_packages(SystemInfo, Package):
         assert Package('php-fpm').is_installed
 
 
-def test_main_config_file(SystemInfo, File):
+@pytest.mark.parametrize('instance_name', [('fpm'), ('fpm-foo')])
+def test_main_config_file(SystemInfo, File, instance_name):
 
-    cfg_file_path = ''
+    cfg_files_path = ''
 
     if SystemInfo.codename == 'trusty':
-        cfg_file_path = '/etc/php5/fpm/php-fpm.conf'
+        cfg_file_path = '/etc/php5/%s/php-fpm.conf' % instance_name
     elif SystemInfo.codename == 'xenial':
-        cfg_file_path = '/etc/php/7.0/fpm/php-fpm.conf'
+        cfg_file_path = '/etc/php/7.0/%s/php-fpm.conf' % instance_name
 
     cfg_file = File(cfg_file_path)
 
@@ -35,14 +36,15 @@ def test_main_config_file(SystemInfo, File):
     assert cfg_file.contains('[global]')
 
 
-def test_fpm_php_ini_config_file(SystemInfo, File):
+@pytest.mark.parametrize('instance_name', [('fpm'), ('fpm-foo')])
+def test_fpm_php_ini_config_file(SystemInfo, File, instance_name):
 
     cfg_file_path = ''
 
     if SystemInfo.codename == 'trusty':
-        cfg_file_path = '/etc/php5/fpm/php.ini'
+        cfg_file_path = '/etc/php5/%s/php.ini' % instance_name
     elif SystemInfo.codename == 'xenial':
-        cfg_file_path = '/etc/php/7.0/fpm/php.ini'
+        cfg_file_path = '/etc/php/7.0/%s/php.ini' % instance_name
 
     cfg_file = File(cfg_file_path)
 
@@ -51,31 +53,83 @@ def test_fpm_php_ini_config_file(SystemInfo, File):
     assert cfg_file.contains('[PHP]')
 
 
-def test_unmanaged_pool_config_file(SystemInfo, File):
+@pytest.mark.parametrize('instance_name', [('fpm'), ('fpm-foo')])
+def test_unmanaged_pool_config_file(SystemInfo, File, instance_name):
 
     cfg_pool_dir_path = ''
 
     if SystemInfo.codename == 'trusty':
-        cfg_pool_dir_path = '/etc/php5/fpm/pool.d/'
+        cfg_pool_dir_path = '/etc/php5/%s/pool.d/' % instance_name
     elif SystemInfo.codename == 'xenial':
-        cfg_pool_dir_path = '/etc/php/7.0/fpm/pool.d/'
+        cfg_pool_dir_path = '/etc/php/7.0/%s/pool.d/' % instance_name
 
     pool_file = File(cfg_pool_dir_path + 'www.conf')
 
     assert pool_file.exists is False
 
 
-def test_managed_pool_config_file(SystemInfo, File):
+@pytest.mark.parametrize('instance_name,pool_name', [
+    ('fpm', 'foobar'),
+    ('fpm-foo', 'foobar2')
+])
+def test_managed_pool_config_file(SystemInfo, File, instance_name, pool_name):
 
     cfg_pool_dir_path = ''
 
     if SystemInfo.codename == 'trusty':
-        cfg_pool_dir_path = '/etc/php5/fpm/pool.d/'
+        cfg_pool_dir_path = '/etc/php5/%s/pool.d' % instance_name
     elif SystemInfo.codename == 'xenial':
-        cfg_pool_dir_path = '/etc/php/7.0/fpm/pool.d/'
+        cfg_pool_dir_path = '/etc/php/7.0/%s/pool.d' % instance_name
 
-    pool_file = File(cfg_pool_dir_path + 'foobar.conf')
+    pool_file = File('%s/%s.conf' % (cfg_pool_dir_path, pool_name))
 
     assert pool_file.exists
     assert pool_file.is_file
-    assert pool_file.contains('[foobar]')
+    assert pool_file.contains('[%s]' % pool_name)
+
+
+@pytest.mark.parametrize('instance_name,service_name', [
+    ('fpm', 'default'),
+    ('fpm-foo', 'fpm-foo')
+])
+def test_init_files(SystemInfo, File, instance_name, service_name):
+
+    real_service_name = ''
+
+    if service_name == 'default':
+        if SystemInfo.codename == 'trusty':
+            real_service_name = 'php5-fpm'
+        elif SystemInfo.codename == 'xenial':
+            real_service_name = 'php7.0-fpm'
+    else:
+        real_service_name = service_name
+
+    init_file = File('/etc/init.d/%s' % real_service_name)
+
+    assert init_file.exists
+    assert init_file.is_file
+
+    if instance_name != 'fpm':
+        assert init_file.contains('for %s instance' % instance_name)
+
+
+@pytest.mark.parametrize('instance_name,service_name', [
+    ('fpm', 'default'),
+    ('fpm-foo', 'fpm-foo')
+])
+def test_services(SystemInfo, Service, instance_name, service_name):
+
+    real_service_name = ''
+
+    if service_name == 'default':
+        if SystemInfo.codename == 'trusty':
+            real_service_name = 'php5-fpm'
+        elif SystemInfo.codename == 'xenial':
+            real_service_name = 'php7.0-fpm'
+    else:
+        real_service_name = service_name
+
+    service = Service(real_service_name)
+
+    assert service.is_enabled
+    assert service.is_running

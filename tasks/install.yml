@@ -7,5 +7,17 @@
     update_cache: "{{ php_fpm_apt_update_cache }}"
     cache_valid_time: "{{ php_fpm_apt_cache_valid_time }}"
     state: "{{ php_fpm_packages_state }}"
-  notify: 'Restart php-fpm'
+  notify: 'Restart php-fpm instance'
+  register: 'php_fpm_check_package_installed'
   with_items: "{{ php_fpm_packages }}"
+
+
+- name: 'Disable and stop default service'
+  become: True
+  service:
+    name: "{{ _php_fpm_service_name }}"
+    state: 'stopped'
+    enabled: False
+  when:
+    - "{{ php_fpm_check_package_installed | changed }}"
+    - "{{ php_fpm_disable_default_service }}"

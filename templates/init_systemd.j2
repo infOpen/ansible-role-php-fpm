@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+
+[Unit]
+Description=The PHP 7.0 FastCGI Process Manager for {{ php_fpm_instance.name }} instance
+After=network.target
+
+[Service]
+Type=notify
+PIDFile={{ php_fpm_pid_file_path }}
+ExecStartPre={{ php_fpm_binary_file_path }} -t -c {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf
+ExecStart={{ php_fpm_binary_file_path }} --nodaemonize --fpm-config {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf
+ExecReload={{ php_fpm_binary_file_path }} -t -c {{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf
+ExecReload=/bin/kill -USR2 $MAINPID
+
+[Install]
+WantedBy=multi-user.target

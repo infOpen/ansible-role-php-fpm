@@ -47,38 +47,68 @@ make test-vagrant
 ### Default role variables
 
 ``` yaml
-# Defaults vars file for php-fpm role
-
+# Packages management
 php_fpm_apt_update_cache: True
 php_fpm_apt_cache_valid_time: 3600
 php_fpm_packages: "{{ _php_fpm_packages }}"
 php_fpm_packages_state: 'present'
 
+# Binaries
 php_fpm_binary_name: "{{ _php_fpm_binary_name }}"
-php_fpm_service_name: "{{ _php_fpm_service_name }}"
 
-php_fpm_config_base: "{{ _php_fpm_config_base }}"
+# Service management
+php_fpm_disable_default_service: False
+
+# Paths
+php_fpm_binary_check_config_file_path: "{{ _php_fpm_binary_check_config_file_path }}"
+php_fpm_binary_file_path: "{{ _php_fpm_binary_file_path }}"
+php_fpm_config_base_path: "{{ _php_fpm_config_base_path }}"
+php_fpm_init_base_path: '/etc/init.d'
+php_fpm_init_file_path: "{{ _php_fpm_init_file_path }}"
+php_fpm_log_base_path: "{{ _php_fpm_log_base_path }}"
+php_fpm_run_base_path: "{{ _php_fpm_run_base_path }}"
+php_fpm_systemd_base_path: "{{ _php_fpm_systemd_base_path | default('') }}"
+
+# Files
+php_fpm_error_log_file_path: "{{ _php_fpm_error_log_file_path }}"
+php_fpm_pid_file_path: "{{ _php_fpm_pid_file_path }}"
+
+# Permissions
 php_fpm_config_owner: 'root'
 php_fpm_config_group: 'root'
+php_fpm_config_directories_mode: '0700'
 php_fpm_config_files_mode: '0644'
+php_fpm_init_files_mode: '0755'
 
-php_fpm_pid_file: "{{ _php_fpm_pid_file }}"
-php_fpm_error_log_file: "{{ _php_fpm_error_log_file }}"
-
-# php-fpm.conf configuration file configuration
-php_fpm_config_main:
-  - section: 'global'
-    option: 'pid'
-    value: "{{ php_fpm_pid_file }}"
-  - section: 'global'
-    option: 'error_log'
-    value: "{{ php_fpm_error_log_file }}"
-  - section: 'global'
-    option: 'include'
-    value: "{{ php_fpm_config_base }}/pool.d/*.conf"
+# Instance management
+php_fpm_instance:
+  name: 'fpm'
+  service_name: "{{ _php_fpm_service_name }}"
+  fpm_config:
+    - section: 'global'
+      option: 'pid'
+      value: "{{ php_fpm_pid_file_path }}"
+    - section: 'global'
+      option: 'error_log'
+      value: "{{ php_fpm_error_log_file_path }}"
+    - section: 'global'
+      option: 'include'
+      value: "{{ php_fpm_config_base_path }}/fpm/pool.d/*.conf"
+  fpm_pools:
+    - name: 'www'
+      user: 'www-data'
+      group: 'www-data'
+      listen: "/var/run/{{ _php_fpm_service_name }}.sock"
+      listen.owner: 'www-data'
+      listen.group: 'www-data'
+      chdir: '/'
+  php_config: []
+  php_modules: []
 
 # php.ini configuration file configuration
-php_fpm_config_php_ini: []
+php_fpm_shared_php_enabled: True
+php_fpm_shared_php_master_file: "{{ php_fpm_config_base_path }}/fpm/php.ini"
+php_fpm_shared_php_master_confd: "{{ php_fpm_config_base_path }}/fpm/conf.d"
 
 # Pools default settings
 php_fpm_pool_defaults:
@@ -89,33 +119,68 @@ php_fpm_pool_defaults:
   pm.max_spare_servers: 3
   pm.status_path: /status
 
-php_fpm_pools: []
+# Logrotate configuration
+php_fpm_logrotate_config:
+  filename: "/etc/logrotate.d/{{ php_fpm_instance.service_name }}"
+  log_pattern: "{{ php_fpm_error_log_file_path }}"
+  options:
+    - 'rotate 54'
+    - 'weekly'
+    - 'missingok'
+    - 'notifempty'
+    - 'compress'
+    - 'delaycompress'
+    - 'postrotate'
+    - "[ -r '{{ php_fpm_pid_file_path }}' ] && kill -USR1 $(cat '{{ php_fpm_pid_file_path }}') > /dev/null"
+    - 'endscript'
 ```
+
+## How ...
+
+### Disable default service and only use custom instances
+
+* Set 'php_fpm_disable_default_service' key to True
+
+### Use a common PHP configuration between instances
+
+* Set 'php_fpm_shared_php_enabled' to True (default)
+* Use a dedicated role (ex: infOpen.php) to manage php configuration.
+
+When use this setting, conf.d folder and php.ini file will be symlinks from:
+* php_fpm_shared_php_master_file target
+* php_fpm_shared_php_master_confd target
 
 ### Define custom settings for php.ini or php-fpm.conf files
 
 You can define custom settings for php.ini or php-fpm.conf using:
-* php.ini: 'php_fpm_config_php_ini'
-* php-fpm.conf: 'php_fpm_config_main'
+* php.ini: 'php_config' key of php_fpm_instance
+* php-fpm.conf: 'fpm_config' key of php_fpm instance
 
+Note: PHP configuration will be managed only if 'php_fpm_shared_php_enabled' is set to False
 ``` yaml
-php_fpm_config_main:
-  - section: 'global'
-    option: 'my_option'
-    value: 'my_value'
-    state: 'present'
+- section: 'global'
+  option: 'my_option'
+  value: 'my_value'
+  state: 'present'
 ```
 
 ### Define pools configuration
 
+Each instance can manage multiple pools, usng this format. Pool settings will be merged with 'php_fpm_pool_defaults' dict
 ```yaml
-php_fpm_pools:
-  - name: 'foobar'
-    user: 'www-data'
-    group: 'www-data'
-    listen: '/var/run/php5-fpm-foobar.sock'
-    listen.owner: 'www-data'
-    listen.group: 'www-data'
+- name: 'foobar'
+  user: 'www-data'
+  group: 'www-data'
+  listen: '/var/run/php5-fpm-foobar.sock'
+  listen.owner: 'www-data'
+  listen.group: 'www-data'
+```
+
+### Define php modules
+
+Note: PHP modules will be managed only if 'php_fpm_shared_php_enabled' is set to False
+```yaml
+- 'json'
 ```
 
 ## Dependencies
