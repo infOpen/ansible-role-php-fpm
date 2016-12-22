@@ -20,6 +20,7 @@
 - name: 'Manage custom instances'
   include: './manage_custom_instances.yml'
   when:
+    - "{{ php_fpm_instance.name is defined }}"
     - "{{ php_fpm_instance.name != 'fpm' }}"
   tags:
     - 'php-fpm::role'
