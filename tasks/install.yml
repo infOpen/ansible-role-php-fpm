@@ -19,5 +19,4 @@
     state: 'stopped'
     enabled: False
   when:
-    - "{{ php_fpm_check_package_installed | changed }}"
     - "{{ php_fpm_disable_default_service }}"
