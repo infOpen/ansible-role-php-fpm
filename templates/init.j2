@@ -42,7 +42,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 #
 do_check()
 {
-    {{ php_fpm_binary_check_config_file_path }} || return 1
+    {{ php_fpm_binary_check_config_file_path }} --fpm-config ${CONFIG_FILE} \
+        || return 1
     return 0
 }
 
