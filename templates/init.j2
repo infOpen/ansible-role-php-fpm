@@ -17,6 +17,9 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="PHP5 FastCGI Process Manager for {{ php_fpm_instance.name }} instance"
 NAME={{ php_fpm_instance.service_name }}
+{% if php_fpm_init_file_set_user %}
+PROCESS_USERNAME={{ php_fpm_init_file_process_user | default(php_fpm_instance.fpm_pools[0].user) }}
+{% endif %}
 CONFIG_FILE={{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf
 DAEMON={{ php_fpm_binary_file_path }}
 DAEMON_ARGS="--daemonize --fpm-config ${CONFIG_FILE}"
@@ -85,7 +88,11 @@ do_stop()
     # that waits for the process to drop all resources that could be
     # needed by services started subsequently.  A last resort is to
     # sleep for some time.
+{% if php_fpm_init_file_set_user %}
+    start-stop-daemon --stop --quiet --oknodo --retry=0/30/TERM/5/KILL/5 --exec $DAEMON --user $(id $PROCESS_USERNAME)
+{% else %}
     start-stop-daemon --stop --quiet --oknodo --retry=0/30/TERM/5/KILL/5 --exec $DAEMON
+{% endif %}
     [ "$?" = 2 ] && return 2
     # Many daemons don't delete their pidfiles when they exit.
     rm -f $PIDFILE

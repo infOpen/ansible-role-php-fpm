@@ -58,6 +58,8 @@ php_fpm_binary_name: "{{ _php_fpm_binary_name }}"
 
 # Service management
 php_fpm_disable_default_service: False
+php_fpm_init_file_set_user: False
+php_fpm_init_file_process_user: "{{ php_fpm_instance.fpm_pools[0].user }}"
 
 # Paths
 php_fpm_binary_check_config_file_path: "{{ _php_fpm_binary_check_config_file_path }}"
@@ -136,6 +138,11 @@ php_fpm_logrotate_config:
 ```
 
 ## How ...
+
+### Force init.d service stop to only managed processes run by a user
+
+* Set 'php_fpm_init_file_set_user' key to True (default: False)
+* Set 'php_fpm_init_file_process_user' key with username
 
 ### Disable default service and only use custom instances
 
