@@ -3,7 +3,7 @@
 # Main tasks file for php-fpm role
 
 - name: 'Load the OS specific varibles'
-  include_vars: "vars/{{ ansible_distribution_release | lower }}.yml"
+  include_vars: "{{ role_path }}/vars/{{ ansible_distribution_release | lower }}.yml"
   tags:
     - 'php-fpm::role'
     - 'php-fpm::config'
@@ -11,14 +11,14 @@
 
 
 - name: 'Include install tasks'
-  include: './install.yml'
+  include: "{{ role_path }}/tasks/install.yml"
   tags:
     - 'php-fpm::role'
     - 'php-fpm::install'
 
 
 - name: 'Manage custom instances'
-  include: './manage_custom_instances.yml'
+  include: "{{ role_path }}/tasks/manage_custom_instances.yml"
   when:
     - "{{ php_fpm_instance.name is defined }}"
     - "{{ php_fpm_instance.name != 'fpm' }}"
@@ -29,7 +29,7 @@
 
 
 - name: 'Include configuration tasks'
-  include: './config.yml'
+  include: "{{ role_path }}/tasks/config.yml"
   tags:
     - 'php-fpm::role'
     - 'php-fpm::config'
