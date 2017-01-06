@@ -129,5 +129,6 @@
     group: "{{ php_fpm_config_group }}"
     mode: '0644'
   when:
+    - "{{ php_fpm_manage_logrotate_config }}"
     - "{{ php_fpm_instance.service_name is defined }}"
     - "{{ php_fpm_instance.service_name != '' }}"

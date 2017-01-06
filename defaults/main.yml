@@ -78,6 +78,7 @@ php_fpm_pool_defaults:
   pm.status_path: /status
 
 # Logrotate configuration
+php_fpm_manage_logrotate_config: True
 php_fpm_logrotate_config:
   filename: "/etc/logrotate.d/{{ php_fpm_instance.service_name }}"
   log_pattern: "{{ php_fpm_error_log_file_path }}"
