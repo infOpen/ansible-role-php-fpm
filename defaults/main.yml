@@ -65,6 +65,7 @@ php_fpm_instance:
 
 # php.ini configuration file configuration
 php_fpm_shared_php_enabled: True
+php_fpm_shared_php_force_unlink: False
 php_fpm_shared_php_master_file: "{{ php_fpm_config_base_path }}/fpm/php.ini"
 php_fpm_shared_php_master_confd: "{{ php_fpm_config_base_path }}/fpm/conf.d"
 
