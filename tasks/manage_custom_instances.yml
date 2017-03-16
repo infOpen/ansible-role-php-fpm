@@ -15,7 +15,6 @@
     - ''
     - 'pool.d'
 
-
 - name: 'Manage shared PHP configuration'
   become: True
   file:
@@ -25,6 +24,7 @@
     group: "{{ php_fpm_config_group }}"
     mode: "{{ php_fpm_config_directories_mode }}"
     state: 'link'
+    force: "{{ php_fpm_shared_php_force_unlink }}"
   notify: 'Restart php-fpm instance'
   with_items:
     - src: "{{ php_fpm_shared_php_master_file }}"

@@ -21,9 +21,9 @@ NAME={{ php_fpm_instance.service_name }}
 PROCESS_USERNAME={{ php_fpm_init_file_process_user | default(php_fpm_instance.fpm_pools[0].user) }}
 {% endif %}
 CONFIG_FILE={{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php-fpm.conf
-PHP_INI_CONFIG_FILE={{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}/php.ini
+PHP_INI_PATH={{ php_fpm_config_base_path }}/{{ php_fpm_instance.name }}
 DAEMON={{ php_fpm_binary_file_path }}
-DAEMON_ARGS="--daemonize --fpm-config ${CONFIG_FILE} -c ${PHP_INI_CONFIG_FILE}"
+DAEMON_ARGS="--daemonize --fpm-config ${CONFIG_FILE} -c ${PHP_INI_PATH}"
 PIDFILE={{ php_fpm_run_base_path }}/{{ php_fpm_instance.service_name }}.pid
 TIMEOUT={{ php_fpm_init_file_timeout }}
 SCRIPTNAME=/etc/init.d/$NAME
