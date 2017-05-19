@@ -1,4 +1,4 @@
-ansible==2.1
+ansible==2.3.0.0
 paramiko==2.0.2
 pytest==3.0.5
 testinfra==1.5.1
